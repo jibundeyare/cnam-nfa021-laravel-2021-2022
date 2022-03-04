@@ -18,3 +18,4 @@ use Illuminate\Support\Facades\Route;
 // MainController est une classe et index est une méthode de cette classe
 // cette route est nommée 'main.index'
 Route::get('/', [MainController::class, 'index'])->name('main.index');
+Route::get('/test', [MainController::class, 'test'])->name('main.test');
