@@ -19,3 +19,4 @@ use Illuminate\Support\Facades\Route;
 // cette route est nommée 'main.index'
 Route::get('/', [MainController::class, 'index'])->name('main.index');
 Route::get('/test', [MainController::class, 'test'])->name('main.test');
+Route::get('/test-resa', [MainController::class, 'testReservation'])->name('main.testReservation');

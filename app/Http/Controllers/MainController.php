@@ -102,7 +102,50 @@ class MainController extends Controller
                 dump($plat->prix);
             }
         }
+    }
 
-        exit();
+    public function testReservation()
+    {
+        $reservation = new Reservation();
+
+        $reservation->nom = 'Toto';
+        $reservation->tel = '0612345678';
+        $reservation->date = '2022-04-01';
+        $reservation->heure = '18:00';
+        $reservation->couverts = 200;
+        // attention : il ne faut pas définir la confirmation
+
+        // enregistrement des données
+        $reservation->save();
+
+        // récupère la réservation dont l'id = 1
+        $reservation = Reservation::find(1);
+        // modification des données
+        $reservation->confirmation = false;
+        // enregistrement des données
+        $reservation->save();
+
+        // récupère la dernière réservation enregistrée
+        // c-à-d le premier élément du tri par ordre descendant de la colonne "id"
+        $reservation = Reservation::select()->orderBy('id', 'desc')->first();
+        dump('## suppression');
+        dump($reservation->id);
+        // suppression de l'élément
+        $reservation->delete();
+
+        // récupère toutes les réservations, en les triant par jour puis par heure
+        $reservations = Reservation::select()->orderBy('date')->orderBy('heure')->get();
+
+        foreach ($reservations as $reservation) {
+            dump('# reservation');
+            dump($reservation->id);
+            dump($reservation->nom);
+            dump($reservation->tel);
+            dump($reservation->date);
+            dump($reservation->heure);
+            dump($reservation->couverts);
+            dump($reservation->confirmation);
+            dump($reservation->created_at);
+        }
     }
 }
