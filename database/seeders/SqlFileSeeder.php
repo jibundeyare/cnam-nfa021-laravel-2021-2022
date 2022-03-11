@@ -19,6 +19,7 @@ class SqlFileSeeder extends Seeder
             __DIR__.'/sql/categorie.sql',
             __DIR__.'/sql/plat.sql',
             __DIR__.'/sql/etiquette_plat.sql',
+            __DIR__.'/sql/reservation.sql',
         ];
 
         foreach ($paths as $path) {

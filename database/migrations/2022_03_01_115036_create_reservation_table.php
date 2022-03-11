@@ -20,6 +20,7 @@ class CreateReservationTable extends Migration
             $table->date('date');
             $table->time('heure');
             $table->integer('couverts');
+            $table->text('commentaires');
             $table->boolean('confirmation')->nullable();
             $table->timestamps();
         });
