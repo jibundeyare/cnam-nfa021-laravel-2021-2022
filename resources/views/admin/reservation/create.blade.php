@@ -28,7 +28,7 @@
                     @enderror
                 </div>
                 <div>
-                    <input type="date" name="date" id="date" class="@error('date') is-invalid @enderror form-control" value="{{ old('date', $reservation->date) }}">
+                    <input type="date" min="{{ $now->format('Y-m-d') }}" name="date" id="date" class="@error('date') is-invalid @enderror form-control" value="{{ old('date', $reservation->date) }}">
                     @error('date')
                     <div class="alert alert-danger">
                         {{ $message }}
@@ -60,15 +60,15 @@
                     @enderror
                 </div>
                 <div>
-                    <input type="radio" name="confirmation" id="confirmation_0" value="0" class="form-check-input" checked>
+                    <input type="radio" name="confirmation" id="confirmation_0" value="0" class="form-check-input" @if (old('confirmation', '0') == '0') checked @endif>
                     <label for="confirmation_0" class="@error('confirmation') is-invalid @enderror form-check-label">
-                        Non confirmé
+                        En attente
                     </label>
-                    <input type="radio" name="confirmation" id="confirmation_1" value="1" class="form-check-input">
+                    <input type="radio" name="confirmation" id="confirmation_1" value="1" class="form-check-input" @if (old('confirmation', '0') == '1') checked @endif>
                     <label for="confirmation_1" class="@error('confirmation') is-invalid @enderror form-check-label">
                         Confirmé
                     </label>
-                    <input type="radio" name="confirmation" id="confirmation_2" value="2" class="form-check-input">
+                    <input type="radio" name="confirmation" id="confirmation_2" value="2" class="form-check-input" @if (old('confirmation', '0') == '2') checked @endif>
                     <label for="confirmation_2" class="@error('confirmation') is-invalid @enderror form-check-label">
                         Annulé
                     </label>
