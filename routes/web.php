@@ -29,5 +29,12 @@ Route::redirect('/foo', '/admin/reservation/create');
 Route::redirect('/google', 'https://google.com');
 
 // back office
+// affichage du formulaire de création
 Route::get('/admin/reservation/create', [ReservationController::class, 'create'])->name('admin.reservation.create');
+// traitement des données du formulaire de création
 Route::post('/admin/reservation', [ReservationController::class, 'store'])->name('admin.reservation.store');
+
+// affichage du formulaire de modification
+Route::get('/admin/reservation/{id}/edit', [ReservationController::class, 'edit'])->name('admin.reservation.edit');
+// traitement des données du formulaire de modification
+Route::put('/admin/reservation/{id}', [ReservationController::class, 'update'])->name('admin.reservation.update');

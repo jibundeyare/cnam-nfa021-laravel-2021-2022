@@ -9,6 +9,42 @@ use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
+    public function edit(int $id)
+    {
+        $reservation = Reservation::find($id);
+
+        if (!$reservation) {
+            $message = "La réservation {$id} n'existe pas";
+            return response()->view('admin.404', [
+                'message' => $message,
+            ], 404);
+        }
+
+        // @fixme les valeurs par défaut doivent être définies dans le modèle
+        $now = new DateTime();
+
+        if ($reservation->confirmation == 0) {
+            // annulé
+            $reservation->confirmation = '2';
+        } elseif ($reservation->confirmation == 1) {
+            // confirmé
+            $reservation->confirmation = '1';
+        } else {
+            // en attente
+            $reservation->confirmation = '0';
+        }
+
+        return view('admin.reservation.edit', [
+            'reservation' => $reservation,
+            'now' => $now,
+        ]);
+    }
+
+    public function update(Request $request, int $id)
+    {
+        dump($id);
+    }
+
     public function create()
     {
         $reservation = new Reservation();
