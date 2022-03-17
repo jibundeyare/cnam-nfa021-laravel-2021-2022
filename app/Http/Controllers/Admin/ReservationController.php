@@ -44,8 +44,6 @@ class ReservationController extends Controller
             'confirmation' => ['required', 'in:0,1,2'],
         ]);
 
-        dump($validated);
-
         $reservation = new Reservation();
         $reservation->nom = $validated['nom'];
         $reservation->tel = $validated['tel'];
