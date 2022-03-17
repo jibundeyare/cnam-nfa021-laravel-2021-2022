@@ -10,9 +10,13 @@
 
             {{-- code utile pour débogger un formulaire et une validation qui ne fonctionnent pas correctement --}}
             {{--
-            @foreach ($errors->all() as $error)
-              <div>{{ $error }}</div>
-            @endforeach
+            @if ($errors->any())
+                <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+                </ul>
+            @endif
             --}}
 
             <form action="{{ route('admin.reservation.store') }}" method="post">
