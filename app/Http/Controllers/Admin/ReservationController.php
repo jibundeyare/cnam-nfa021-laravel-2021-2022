@@ -30,7 +30,7 @@ class ReservationController extends Controller
         $today->setTime(0, 0);
 
         // @fixme dans les messages d'erreurs, c'est le nom du champ dans la BDD qui est utilisé
-        $request->validate([
+        $validated = $request->validate([
             // interdiction d'utiliser des chiffres 'not_regex:/[0-9]+/'
             'nom' => ['required', 'min:2', 'max:190', 'not_regex:/[0-9]+/'],
             // obligation d'utiliser des chiffres, parenthèses, des plus ou des espaces 'regex:/^\+?[0-9() ]+$/'
@@ -44,6 +44,27 @@ class ReservationController extends Controller
             'confirmation' => ['required', 'in:0,1,2'],
         ]);
 
+        dump($validated);
+
         $reservation = new Reservation();
+        $reservation->nom = $validated['nom'];
+        $reservation->tel = $validated['tel'];
+        $reservation->date = $validated['date'];
+        $reservation->heure = $validated['heure'];
+        $reservation->couverts = $validated['couverts'];
+        if (empty($validated['commentaires'])) {
+            $reservation->commentaires = '';
+        } else {
+            $reservation->commentaires = $validated['commentaires'];
+        }
+        if ($validated['confirmation'] == '0') {
+            $reservation->confirmation = null;
+        } elseif ($validated['confirmation'] == '1') {
+            $reservation->confirmation = true;
+        } else {
+            $reservation->confirmation = false;
+        }
+
+        $reservation->save();
     }
 }
