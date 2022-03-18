@@ -9,13 +9,13 @@ use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class MainController extends Controller
+class FrontController extends Controller
 {
     public function index()
     {
         $message = 'foo bar baz';
 
-        return view('main.index', [
+        return view('front.index', [
             'message' => $message,
         ]);
     }
@@ -113,6 +113,7 @@ class MainController extends Controller
         $reservation->date = '2022-04-01';
         $reservation->heure = '18:00';
         $reservation->couverts = 200;
+        $reservation->commentaires = '';
         // attention : il ne faut pas définir la confirmation
 
         // enregistrement des données
@@ -144,6 +145,7 @@ class MainController extends Controller
             dump($reservation->date);
             dump($reservation->heure);
             dump($reservation->couverts);
+            dump($reservation->commentaires);
             dump($reservation->confirmation);
             dump($reservation->created_at);
         }

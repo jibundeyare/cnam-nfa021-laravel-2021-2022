@@ -11,19 +11,62 @@ class ReservationController extends Controller
 {
     public function index()
     {
-        $today = new DateTime();
-        // on fixe l'heure et les minutes à zéro
-        $today->setTime(0, 0);
+        $now = new DateTime();
 
-        // récupère les réservations à partir d'aujourd'hui et plus tard, en les triant par jour puis par heure
+        // récupèration des réservations à partir d'aujourd'hui et plus tard, en les triant par jour puis par heure
         $reservations = Reservation::select()
-            ->where('date', '>=', $today->format('Y-m-d'))
-            ->orderBy('date')
+            ->where('jour', '>=', $now->format('Y-m-d'))
+            ->orderBy('jour')
             ->orderBy('heure')
             ->get();
 
         return view('admin.reservation.index', [
+            'title' => 'Liste des réservations',
             'reservations' => $reservations,
+        ]);
+    }
+
+    public function archive()
+    {
+        $now = new DateTime();
+
+        // récupèration des réservations avant d'aujourd'hui, en les triant par jour puis par heure
+        $reservations = Reservation::select()
+            ->where('jour', '<', $now->format('Y-m-d'))
+            ->orderBy('jour', 'DESC')
+            ->orderBy('heure', 'DESC')
+            ->get();
+
+        return view('admin.reservation.index', [
+            'title' => 'Liste des anciennes réservations',
+            'reservations' => $reservations,
+        ]);
+    }
+
+    public function create()
+    {
+        $reservation = new Reservation();
+        // dans l'admin, par défaut la réservation est confirmée
+        $reservation->confirmation = 1;
+        $data = $reservation->modelToForm();
+        $now = new DateTime();
+
+        return view('admin.reservation.create', [
+            'data' => $data,
+            'now' => $now,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $rules = $this->getRules();
+        $validated = $request->validate($rules);
+        $reservation = new Reservation();
+        $reservation->formToModel($validated);
+        $reservation->save();
+
+        return redirect()->route('admin.reservation.edit', [
+            'id' => $reservation->id,
         ]);
     }
 
@@ -32,28 +75,14 @@ class ReservationController extends Controller
         $reservation = Reservation::find($id);
 
         if (!$reservation) {
-            $message = "La réservation {$id} n'existe pas";
-            return response()->view('admin.404', [
-                'message' => $message,
-            ], 404);
+            return $this->error404($id);
         }
 
-        // @fixme les valeurs par défaut doivent être définies dans le modèle
+        $data = $reservation->modelToForm();
         $now = new DateTime();
 
-        if ($reservation->confirmation === 0) {
-            // annulé
-            $reservation->confirmation = '0';
-        } elseif ($reservation->confirmation === 1) {
-            // confirmé
-            $reservation->confirmation = '1';
-        } else {
-            // en attente
-            $reservation->confirmation = 'null';
-        }
-
         return view('admin.reservation.edit', [
-            'reservation' => $reservation,
+            'data' => $data,
             'now' => $now,
         ]);
     }
@@ -63,45 +92,12 @@ class ReservationController extends Controller
         $reservation = Reservation::find($id);
 
         if (!$reservation) {
-            $message = "La réservation {$id} n'existe pas";
-            return response()->view('admin.404', [
-                'message' => $message,
-            ], 404);
+            return $this->error404($id);
         }
 
         $rules = $this->getRules();
         $validated = $request->validate($rules);
-
-        $reservation = $this->formToModel($validated, $reservation);
-        $reservation->save();
-
-        return redirect()->route('admin.reservation.edit', [
-            'id' => $reservation->id,
-        ]);
-    }
-
-    public function create()
-    {
-        $reservation = new Reservation();
-        // @fixme les valeurs par défaut doivent être définies dans le modèle
-        $now = new DateTime();
-        $reservation->date = $now->format('Y-m-d');
-        $reservation->heure = $now->format('H:i');
-        $reservation->confirmation = 'null';
-
-        return view('admin.reservation.create', [
-            'reservation' => $reservation,
-            'now' => $now,
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $rules = $this->getRules();
-        $validated = $request->validate($rules);
-
-        $reservation = new Reservation();
-        $reservation = $this->formToModel($validated, $reservation);
+        $reservation->formToModel($validated);
         $reservation->save();
 
         return redirect()->route('admin.reservation.edit', [
@@ -114,10 +110,7 @@ class ReservationController extends Controller
         $reservation = Reservation::find($id);
 
         if (!$reservation) {
-            $message = "La réservation {$id} n'existe pas";
-            return response()->view('admin.404', [
-                'message' => $message,
-            ], 404);
+            return $this->error404($id);
         }
 
         $reservation->delete();
@@ -125,11 +118,18 @@ class ReservationController extends Controller
         return redirect()->route('admin.reservation.index');
     }
 
+    public function error404(int $id)
+    {
+        $message = "La réservation {$id} n'existe pas";
+
+        return response()->view('admin.error.404', [
+            'message' => $message,
+        ], 404);
+    }
+
     public function getRules()
     {
-        $today = new DateTime();
-        // on fixe l'heure et les minutes à zéro
-        $today->setTime(0, 0);
+        $now = new DateTime();
 
         // @fixme dans les messages d'erreurs, c'est le nom du champ dans la BDD qui est utilisé
         return [
@@ -138,39 +138,12 @@ class ReservationController extends Controller
             // obligation d'utiliser des chiffres, parenthèses, des plus ou des espaces 'regex:/^\+?[0-9() ]+$/'
             'tel' => ['required', 'max:190', 'regex:/^\+?[0-9() ]+$/'],
             // @fixme dans le message d'erreur, le mot clé today n'est pas traduit
-            // 'date' => ['required', 'date', 'after_or_equal:today'],
-            'date' => ['required', 'date', 'after_or_equal:'.$today->format('Y-m-d')],
+            // 'jour' => ['required', 'date', 'after_or_equal:today'],
+            'jour' => ['required', 'date', 'after_or_equal:'.$now->format('Y-m-d')],
             'heure' => ['required'],
             'couverts' => ['required', 'integer', 'between:1,12'],
             'commentaires' => ['nullable', 'max:500'],
             'confirmation' => ['required', 'in:null,0,1'],
         ];
-    }
-
-    public function formToModel(array $validated, Reservation $reservation): Reservation
-    {
-        $reservation->nom = $validated['nom'];
-        $reservation->tel = $validated['tel'];
-        $reservation->date = $validated['date'];
-        $reservation->heure = $validated['heure'];
-        $reservation->couverts = $validated['couverts'];
-        if (empty($validated['commentaires'])) {
-            $reservation->commentaires = '';
-        } else {
-            $reservation->commentaires = $validated['commentaires'];
-        }
-
-        if ($validated['confirmation'] == '0') {
-            // annulé
-            $reservation->confirmation = 0;
-        } elseif ($validated['confirmation'] == '1') {
-            // confirmé
-            $reservation->confirmation = 1;
-        } else {
-            // en attente
-            $reservation->confirmation = null;
-        }
-
-        return $reservation;
     }
 }

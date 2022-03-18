@@ -17,7 +17,7 @@ class CreateReservationTable extends Migration
             $table->id();
             $table->string('nom');
             $table->string('tel');
-            $table->date('date');
+            $table->date('jour');
             $table->time('heure');
             $table->integer('couverts');
             $table->text('commentaires');

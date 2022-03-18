@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ReservationController;
-use App\Http\Controllers\MainController;
+use App\Http\Controllers\FrontController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Route;
 // ajouter la route '/' associée avec l'action MainController::index()
 // MainController est une classe et index est une méthode de cette classe
 // cette route est nommée 'main.index'
-Route::get('/', [MainController::class, 'index'])->name('main.index');
-Route::get('/test', [MainController::class, 'test'])->name('main.test');
-Route::get('/test-resa', [MainController::class, 'testReservation'])->name('main.testReservation');
+Route::get('/', [FrontController::class, 'index'])->name('front.index');
+Route::get('/test', [FrontController::class, 'test'])->name('front.test');
+Route::get('/test-reservation', [FrontController::class, 'testReservation'])->name('front.testReservation');
 
 // redirection interne
 Route::redirect('/foo', '/admin/reservation/create');
@@ -31,6 +31,8 @@ Route::redirect('/google', 'https://google.com');
 // back office
 // affichage de la liste des réservations
 Route::get('/admin/reservation', [ReservationController::class, 'index'])->name('admin.reservation.index');
+// affichage de la liste des ancienne réservations
+Route::get('/admin/reservation/archive', [ReservationController::class, 'archive'])->name('admin.reservation.archive');
 
 // affichage du formulaire de création de réservation
 Route::get('/admin/reservation/create', [ReservationController::class, 'create'])->name('admin.reservation.create');
