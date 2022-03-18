@@ -42,7 +42,16 @@ class ReservationController extends Controller
 
     public function update(Request $request, int $id)
     {
-        dump($id);
+        $reservation = Reservation::find($id);
+
+        if (!$reservation) {
+            $message = "La réservation {$id} n'existe pas";
+            return response()->view('admin.404', [
+                'message' => $message,
+            ], 404);
+        }
+
+        // validation
     }
 
     public function create()
@@ -62,24 +71,8 @@ class ReservationController extends Controller
 
     public function store(Request $request)
     {
-        $today = new DateTime();
-        // on fixe l'heure et les minutes à zéro
-        $today->setTime(0, 0);
-
-        // @fixme dans les messages d'erreurs, c'est le nom du champ dans la BDD qui est utilisé
-        $validated = $request->validate([
-            // interdiction d'utiliser des chiffres 'not_regex:/[0-9]+/'
-            'nom' => ['required', 'min:2', 'max:190', 'not_regex:/[0-9]+/'],
-            // obligation d'utiliser des chiffres, parenthèses, des plus ou des espaces 'regex:/^\+?[0-9() ]+$/'
-            'tel' => ['required', 'max:190', 'regex:/^\+?[0-9() ]+$/'],
-            // @fixme dans le message d'erreur, le mot clé today n'est pas traduit
-            // 'date' => ['required', 'date', 'after_or_equal:today'],
-            'date' => ['required', 'date', 'after_or_equal:'.$today->format('Y-m-d')],
-            'heure' => ['required'],
-            'couverts' => ['required', 'integer', 'between:1,12'],
-            'commentaires' => ['nullable', 'max:500'],
-            'confirmation' => ['required', 'in:0,1,2'],
-        ]);
+        $rules = $this->getRules();
+        $validated = $request->validate($rules);
 
         $reservation = new Reservation();
         $reservation->nom = $validated['nom'];
@@ -105,5 +98,27 @@ class ReservationController extends Controller
         }
 
         $reservation->save();
+    }
+
+    public function getRules()
+    {
+        $today = new DateTime();
+        // on fixe l'heure et les minutes à zéro
+        $today->setTime(0, 0);
+
+        // @fixme dans les messages d'erreurs, c'est le nom du champ dans la BDD qui est utilisé
+        return [
+            // interdiction d'utiliser des chiffres 'not_regex:/[0-9]+/'
+            'nom' => ['required', 'min:2', 'max:190', 'not_regex:/[0-9]+/'],
+            // obligation d'utiliser des chiffres, parenthèses, des plus ou des espaces 'regex:/^\+?[0-9() ]+$/'
+            'tel' => ['required', 'max:190', 'regex:/^\+?[0-9() ]+$/'],
+            // @fixme dans le message d'erreur, le mot clé today n'est pas traduit
+            // 'date' => ['required', 'date', 'after_or_equal:today'],
+            'date' => ['required', 'date', 'after_or_equal:'.$today->format('Y-m-d')],
+            'heure' => ['required'],
+            'couverts' => ['required', 'integer', 'between:1,12'],
+            'commentaires' => ['nullable', 'max:500'],
+            'confirmation' => ['required', 'in:null,0,1'],
+        ];
     }
 }
