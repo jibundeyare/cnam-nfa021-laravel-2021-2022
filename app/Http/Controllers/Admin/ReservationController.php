@@ -9,6 +9,24 @@ use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
+    public function index()
+    {
+        $today = new DateTime();
+        // on fixe l'heure et les minutes à zéro
+        $today->setTime(0, 0);
+
+        // récupère les réservations à partir d'aujourd'hui et plus tard, en les triant par jour puis par heure
+        $reservations = Reservation::select()
+            ->where('date', '>=', $today->format('Y-m-d'))
+            ->orderBy('date')
+            ->orderBy('heure')
+            ->get();
+
+        return view('admin.reservation.index', [
+            'reservations' => $reservations,
+        ]);
+    }
+
     public function edit(int $id)
     {
         $reservation = Reservation::find($id);
@@ -51,7 +69,15 @@ class ReservationController extends Controller
             ], 404);
         }
 
-        // validation
+        $rules = $this->getRules();
+        $validated = $request->validate($rules);
+
+        $reservation = $this->formToModel($validated, $reservation);
+        $reservation->save();
+
+        return redirect()->route('admin.reservation.edit', [
+            'id' => $reservation->id,
+        ]);
     }
 
     public function create()
@@ -75,29 +101,28 @@ class ReservationController extends Controller
         $validated = $request->validate($rules);
 
         $reservation = new Reservation();
-        $reservation->nom = $validated['nom'];
-        $reservation->tel = $validated['tel'];
-        $reservation->date = $validated['date'];
-        $reservation->heure = $validated['heure'];
-        $reservation->couverts = $validated['couverts'];
-        if (empty($validated['commentaires'])) {
-            $reservation->commentaires = '';
-        } else {
-            $reservation->commentaires = $validated['commentaires'];
-        }
-
-        if ($validated['confirmation'] == '0') {
-            // annulé
-            $reservation->confirmation = 0;
-        } elseif ($validated['confirmation'] == '1') {
-            // confirmé
-            $reservation->confirmation = 1;
-        } else {
-            // en attente
-            $reservation->confirmation = null;
-        }
-
+        $reservation = $this->formToModel($validated, $reservation);
         $reservation->save();
+
+        return redirect()->route('admin.reservation.edit', [
+            'id' => $reservation->id,
+        ]);
+    }
+
+    public function destroy(int $id)
+    {
+        $reservation = Reservation::find($id);
+
+        if (!$reservation) {
+            $message = "La réservation {$id} n'existe pas";
+            return response()->view('admin.404', [
+                'message' => $message,
+            ], 404);
+        }
+
+        $reservation->delete();
+
+        return redirect()->route('admin.reservation.index');
     }
 
     public function getRules()
@@ -120,5 +145,32 @@ class ReservationController extends Controller
             'commentaires' => ['nullable', 'max:500'],
             'confirmation' => ['required', 'in:null,0,1'],
         ];
+    }
+
+    public function formToModel(array $validated, Reservation $reservation): Reservation
+    {
+        $reservation->nom = $validated['nom'];
+        $reservation->tel = $validated['tel'];
+        $reservation->date = $validated['date'];
+        $reservation->heure = $validated['heure'];
+        $reservation->couverts = $validated['couverts'];
+        if (empty($validated['commentaires'])) {
+            $reservation->commentaires = '';
+        } else {
+            $reservation->commentaires = $validated['commentaires'];
+        }
+
+        if ($validated['confirmation'] == '0') {
+            // annulé
+            $reservation->confirmation = 0;
+        } elseif ($validated['confirmation'] == '1') {
+            // confirmé
+            $reservation->confirmation = 1;
+        } else {
+            // en attente
+            $reservation->confirmation = null;
+        }
+
+        return $reservation;
     }
 }

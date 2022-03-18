@@ -23,10 +23,8 @@
     <header>
         <nav>
             <ul>
-                <li><a href="#">lien</a></li>
-                <li><a href="#">lien</a></li>
-                <li><a href="#">lien</a></li>
-                <li><a href="#">lien</a></li>
+                <li><a href="{{ route('admin.reservation.index') }}">Liste des réservation</a></li>
+                <li><a href="{{ route('admin.reservation.create') }}">Création réservation</a></li>
             </ul>
         </nav>
     </header>
