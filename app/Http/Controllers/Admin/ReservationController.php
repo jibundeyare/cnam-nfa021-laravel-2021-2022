@@ -23,15 +23,15 @@ class ReservationController extends Controller
         // @fixme les valeurs par défaut doivent être définies dans le modèle
         $now = new DateTime();
 
-        if ($reservation->confirmation == 0) {
+        if ($reservation->confirmation === 0) {
             // annulé
-            $reservation->confirmation = '2';
-        } elseif ($reservation->confirmation == 1) {
+            $reservation->confirmation = '0';
+        } elseif ($reservation->confirmation === 1) {
             // confirmé
             $reservation->confirmation = '1';
         } else {
             // en attente
-            $reservation->confirmation = '0';
+            $reservation->confirmation = 'null';
         }
 
         return view('admin.reservation.edit', [
@@ -52,6 +52,7 @@ class ReservationController extends Controller
         $now = new DateTime();
         $reservation->date = $now->format('Y-m-d');
         $reservation->heure = $now->format('H:i');
+        $reservation->confirmation = 'null';
 
         return view('admin.reservation.create', [
             'reservation' => $reservation,
@@ -91,12 +92,16 @@ class ReservationController extends Controller
         } else {
             $reservation->commentaires = $validated['commentaires'];
         }
+
         if ($validated['confirmation'] == '0') {
-            $reservation->confirmation = null;
+            // annulé
+            $reservation->confirmation = 0;
         } elseif ($validated['confirmation'] == '1') {
-            $reservation->confirmation = true;
+            // confirmé
+            $reservation->confirmation = 1;
         } else {
-            $reservation->confirmation = false;
+            // en attente
+            $reservation->confirmation = null;
         }
 
         $reservation->save();
